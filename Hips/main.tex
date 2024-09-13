@@ -1,0 +1,249 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{float}
+
+\title{Programming Assignment 1: Matrix Multiplication and Cache Analysis}
+\author{Nilesh Barandwal}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The objective of this task is to implement different versions of the matrix multiplication algorithm corresponding to all possible loop orderings and analyze their performance in terms of execution time and cache efficiency. We explore six different loop orderings for matrix multiplication and gather performance data using Valgrind's Cachegrind tool. Both single and double precision are evaluated to observe the effect of precision on performance.
+
+We evaluate two precision levels:
+\begin{itemize}
+    \item Single Precision (using \texttt{-DSINGLE} flag)
+    \item Double Precision (using \texttt{-DDOUBLE} flag)
+\end{itemize}
+
+Each version of the matrix multiplication algorithm is compiled and executed for a 4096x4096 matrix. The loop orders evaluated are:
+\begin{itemize}
+    \item \texttt{IJK}
+    \item \texttt{IKJ}
+    \item \texttt{JIK}
+    \item \texttt{JKI}
+    \item \texttt{KIJ}
+    \item \texttt{KJI}
+\end{itemize}
+
+The results focus on execution time and cache data read misses.
+
+\section{Compilation and Build Process}
+
+We first define a \texttt{Makefile} to compile the six loop orderings for both single and double precision matrix multiplication. The \texttt{Makefile} builds separate executables for each loop ordering and precision level.
+
+\subsection{Makefile Overview}
+
+The following commands are used to compile the executables:
+
+\begin{lstlisting}[language=bash, caption=Makefile build commands]
+make all
+\end{lstlisting}
+
+This will compile the following executables:
+
+\begin{itemize}
+    \item Single Precision Executables: 
+    \begin{itemize}
+        \item \texttt{matmul\_single\_IJK}
+        \item \texttt{matmul\_single\_IKJ}
+        \item \texttt{matmul\_single\_JIK}
+        \item \texttt{matmul\_single\_JKI}
+        \item \texttt{matmul\_single\_KIJ}
+        \item \texttt{matmul\_single\_KJI}
+    \end{itemize}
+    \item Double Precision Executables:
+    \begin{itemize}
+        \item \texttt{matmul\_double\_IJK}
+        \item \texttt{matmul\_double\_IKJ}
+        \item \texttt{matmul\_double\_JIK}
+        \item \texttt{matmul\_double\_JKI}
+        \item \texttt{matmul\_double\_KIJ}
+        \item \texttt{matmul\_double\_KJI}
+    \end{itemize}
+\end{itemize}
+
+\subsection{Single Precision Compilation Example}
+
+The following command builds the single-precision matrix multiplication with all six loop orders:
+
+\begin{lstlisting}[language=bash]
+g++ -c -o build/matmul_single_IJK.o -O2 -m64 -msse3 -g -Wall -Iinc -DSINGLE -DORDER_IJK src/matmul.cpp
+g++ -m64 -msse3 -o build/matmul_single_IJK build/matmul_single_IJK.o -lrt
+\end{lstlisting}
+
+\subsection{Double Precision Compilation Example}
+
+Similarly, the following command builds the double-precision version:
+
+\begin{lstlisting}[language=bash]
+g++ -c -o build/matmul_double_IJK.o -O2 -m64 -msse3 -g -Wall -Iinc -DDOUBLE -DORDER_IJK src/matmul.cpp
+g++ -m64 -msse3 -o build/matmul_double_IJK build/matmul_double_IJK.o -lrt
+\end{lstlisting}
+
+\section{Running the Executables}
+
+The compiled executables are run with a matrix size of 4096x4096. The commands for executing the binaries are shown below:
+
+\begin{lstlisting}[language=bash, caption=Run Single Precision Executables]
+./build/matmul_single_IJK 4096
+./build/matmul_single_IKJ 4096
+./build/matmul_single_JIK 4096
+./build/matmul_single_JKI 4096
+./build/matmul_single_KIJ 4096
+./build/matmul_single_KJI 4096
+\end{lstlisting}
+
+For double precision executables:
+
+\begin{lstlisting}[language=bash, caption=Run Double Precision Executables]
+./build/matmul_double_IJK 4096
+./build/matmul_double_IKJ 4096
+./build/matmul_double_JIK 4096
+./build/matmul_double_JKI 4096
+./build/matmul_double_KIJ 4096
+./build/matmul_double_KJI 4096
+\end{lstlisting}
+
+\section{Results}
+
+The results for the execution times of the matrix multiplication for both single and double precision are presented below.
+
+\subsection{Single Precision Execution Times}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Loop Order & Time (seconds) \\
+        \hline
+        \texttt{IJK} & 518.816 \\
+        \texttt{IKJ} & 40.8354 \\
+        \texttt{JIK} & 471.729 \\
+        \texttt{JKI} & 1389.68 \\
+        \texttt{KIJ} & 39.4881 \\
+        \texttt{KJI} & 1085.05 \\
+        \hline
+    \end{tabular}
+    \caption{Single Precision Execution Times for 4096x4096 Matrix Multiplication}
+\end{table}
+
+\subsection{Double Precision Execution Times}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Loop Order & Time (seconds) \\
+        \hline
+        \texttt{IJK} & 634.066 \\
+        \texttt{IKJ} & 50.9032 \\
+        \texttt{JIK} & 651.029 \\
+        \texttt{JKI} & 2076.06 \\
+        \texttt{KIJ} & 56.8828 \\
+        \texttt{KJI} & 1543.91 \\
+        \hline
+    \end{tabular}
+    \caption{Double Precision Execution Times for 4096x4096 Matrix Multiplication}
+\end{table}
+
+From the results, we observe that the loop orders \texttt{IKJ} and \texttt{KIJ} perform significantly better than others for both single and double precision. The slowest performance is seen with the \texttt{JKI} and \texttt{KJI} orders.
+
+\section{Cache Analysis with Valgrind}
+
+To analyze the cache performance, we used Valgrind's \texttt{cachegrind} tool to collect detailed cache usage statistics, such as the number of cache data read misses.
+
+\subsection{Step-by-Step Guide to Using \texttt{valgrind} with \texttt{cachegrind}}
+
+To fulfill the assignment requirements, \texttt{valgrind} was used to measure cache data read misses for each executable. Below is the process for running \texttt{valgrind} with \texttt{cachegrind} for both single and double precision executables.
+
+\subsubsection{Run Valgrind for Single Precision Executables}
+
+Execute the following commands to run \texttt{valgrind} with \texttt{cachegrind} on each single-precision executable:
+
+\begin{lstlisting}[language=bash]
+valgrind --tool=cachegrind ./build/matmul_single_IJK 4096
+mv cachegrind.out.* cachegrind_single_IJK.out
+
+valgrind --tool=cachegrind ./build/matmul_single_IKJ 4096
+mv cachegrind.out.* cachegrind_single_IKJ.out
+
+valgrind --tool=cachegrind ./build/matmul_single_JIK 4096
+mv cachegrind.out.* cachegrind_single_JIK.out
+
+valgrind --tool=cachegrind ./build/matmul_single_JKI 4096
+mv cachegrind.out.* cachegrind_single_JKI.out
+
+valgrind --tool=cachegrind ./build/matmul_single_KIJ 4096
+mv cachegrind.out.* cachegrind_single_KIJ.out
+
+valgrind --tool=cachegrind ./build/matmul_single_KJI 4096
+mv cachegrind.out.* cachegrind_single_KJI.out
+\end{lstlisting}
+
+\subsubsection{Run Valgrind for Double Precision Executables}
+
+Similarly, for double-precision executables:
+
+\begin{lstlisting}[language=bash]
+valgrind --tool=cachegrind ./build/matmul_double_IJK 4096
+mv cachegrind.out.* cachegrind_double_IJK.out
+
+valgrind --tool=cachegrind ./build/matmul_double_IKJ 4096
+mv cachegrind.out.* cachegrind_double_IKJ.out
+
+valgrind --tool=cachegrind ./build/matmul_double_JIK 4096
+mv cachegrind.out.* cachegrind_double_JIK.out
+
+valgrind --tool=cachegrind ./build/matmul_double_JKI 4096
+mv cachegrind.out.* cachegrind_double_JKI.out
+
+valgrind --tool=cachegrind ./build/matmul_double_KIJ 4096
+mv cachegrind.out.* cachegrind_double_KIJ.out
+
+valgrind --tool=cachegrind ./build/matmul_double_KJI 4096
+mv cachegrind.out.* cachegrind_double_KJI.out
+\end{lstlisting}
+
+\subsubsection{Analyze the Results}
+
+You can use \texttt{cg\_annotate} to get a human-readable report from the \texttt{cachegrind.out} files. For example:
+
+\begin{lstlisting}[language=bash]
+cg_annotate cachegrind_single_IJK.out
+cg_annotate cachegrind_single_IKJ.out
+cg_annotate cachegrind_single_JIK.out
+cg_annotate cachegrind_single_JKI.out
+cg_annotate cachegrind_single_KIJ.out
+cg_annotate cachegrind_single_KJI.out
+\end{lstlisting}
+
+Similarly, for double precision files:
+
+\begin{lstlisting}[language=bash]
+cg_annotate cachegrind_double_IJK.out
+cg_annotate cachegrind_double_IKJ.out
+cg_annotate cachegrind_double_JIK.out
+cg_annotate cachegrind_double_JKI.out
+cg_annotate cachegrind_double_KIJ.out
+cg_annotate cachegrind_double_KJI.out
+\end{lstlisting}
+
+This command provides a detailed report of cache usage, including cache read misses, which is useful for analyzing performance.
+
+\subsubsection{Summarize Your Findings}
+
+Compare the cache read misses and other relevant metrics for different loop orders. Document the results in your report, noting any patterns or significant differences in performance.
+
+\section{Conclusion}
+
+This report demonstrates the implementation of six different matrix multiplication loop orders for both single and double precision, along with their cache performance analysis. By using \texttt{valgrind} and \texttt{cachegrind}, we gathered cache data read misses and other statistics to analyze the performance implications of different loop orderings. The results provide insights into how memory access patterns affect cache performance, which is crucial for optimizing high-performance matrix multiplication algorithms.
+
+
+\end{document}
