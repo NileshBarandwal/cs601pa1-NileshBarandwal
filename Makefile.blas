@@ -1,0 +1,28 @@
+# Define the compiler
+CXX = g++
+CXXFLAGS = -O2 -m64 -msse3 -g -Wall -Iinc
+
+# Define the target executable
+TARGET = matvec
+
+# Define the object files
+OBJS = src/matvec.o src/timeutil.o
+
+# Define the libraries to link against
+# Remove -lblas since we're not using BLAS anymore
+LIBS = -lrt
+
+# Default rule
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $(OBJS) $(LIBS)
+
+# Rule for compiling .cpp files to .o files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean up
+clean:
+	rm -f $(TARGET) $(OBJS)
+
