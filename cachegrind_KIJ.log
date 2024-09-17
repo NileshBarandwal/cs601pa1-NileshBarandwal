@@ -1,0 +1,8 @@
+==2199403== Cachegrind, a high-precision tracing profiler
+==2199403== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote et al.
+==2199403== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==2199403== Command: ./build/matmul_single_KIJ 4096 --log-file=cachegrind_single_KIJ.out
+==2199403== 
+elapsed seconds: 992.141
+==2199403== 
+==2199403== I refs:        552,021,861,825
